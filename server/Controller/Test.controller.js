@@ -15,7 +15,7 @@ const getTest=async(req,res)=>{
         console.error("Unable to fetch the data",error)
         return res.status(500).json({
             success:false,
-            error:"Unable to fetch the data"
+            error:"Unable to fetch the data",error
         })
     }
 }

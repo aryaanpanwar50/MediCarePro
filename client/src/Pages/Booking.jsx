@@ -76,6 +76,20 @@ const useBookingData = () => {
       setLoading(true);
       setError("");
       
+      // Debug: Check if we have tokens
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+      
+      console.log("Access Token exists:", !!accessToken);
+      console.log("Refresh Token exists:", !!refreshToken);
+      
+      if (!accessToken) {
+        setError("No authentication token found. Please login again.");
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+      
       const response = await axios.get(`${API_URL}/clinic/booking/get`);
       
       if (response.data.success) {
@@ -85,14 +99,16 @@ const useBookingData = () => {
       }
     } catch (e) {
       console.error("Booking fetch error:", e);
+      console.error("Error response:", e.response);
       
-      // Enhanced error handling with specific messages
-      if (e.response?.status === 401) {
-        setError("Session expired. Please login again.");
-      } else if (e.response?.status === 403) {
+      // Enhanced error handling - let interceptors handle 401, we handle others
+      if (e.response?.status === 403) {
         setError("Access denied. Please check your permissions.");
       } else if (e.response?.status >= 500) {
         setError("Server error. Please try again later.");
+      } else if (e.response?.status === 401) {
+        // Don't handle 401 here - let the interceptor handle it
+        setError("Authentication failed. Please try again.");
       } else {
         setError(e.response?.data?.error || "Failed to fetch bookings. Please check your connection.");
       }
@@ -266,7 +282,7 @@ const Booking = () => {
                       Booking ID: {booking._id?.slice(-8).toUpperCase() || "N/A"}
                     </div>
                     <a
-                      href="http://localhost:5000/reports/dummy-report.pdf"
+                      href={`${API_URL}/reports/dummy-report.pdf`}
                       download
                       target="_blank"
                       rel="noopener noreferrer"
