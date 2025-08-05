@@ -24,7 +24,7 @@ const corsOptions = {
       ? [
           process.env.FRONTEND_URL,
           'https://medi-care-pro-xi.vercel.app',
-          'https://medicarepro.onrender.com'
+          'https://medi-care-pro-backend.vercel.app'
         ]
       : [
           'http://localhost:5173',
