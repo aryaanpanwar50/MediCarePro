@@ -60,6 +60,25 @@ app.get('/',(req,res)=>{
    res.send("This is a clinic")
 })
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Server is running',
+        timestamp: new Date().toISOString()
+    })
+})
+
+// Global error handler
+app.use((error, req, res, next) => {
+    console.error('Global error handler:', error);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : error.message
+    });
+});
+
 
 
 
@@ -67,7 +86,13 @@ app.listen(PORT, async () => {
     try {
         await connectDb();
         console.log(`The server is running on Port ${PORT}`);
+        console.log(`Health check available at: /health`);
     } catch (error) {
-        console.log("Internal server error", error);
+        console.error("Failed to start server:", error);
+        console.error("Database connection failed. Please check your MONGO_URL environment variable.");
+        // Don't exit in production, let Vercel handle restarts
+        if (process.env.NODE_ENV !== 'production') {
+            process.exit(1);
+        }
     }
 });
