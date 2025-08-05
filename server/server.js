@@ -17,7 +17,7 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'http://localhost:5000',
-        'https://medi-care-pro-zeta.vercel.app/p',
+        'https://medi-care-pro-zeta.vercel.app',
         // Add your Vercel backend URL here
         'https://khelzy-backend.vercel.app'
     ],
