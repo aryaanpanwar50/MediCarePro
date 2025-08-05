@@ -173,7 +173,7 @@ const Booking = () => {
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/home')}
               className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 rounded-lg p-2"
               aria-label="Go back to home page"
             >
@@ -236,14 +236,23 @@ const Booking = () => {
                         {booking.testId?.name || "Test Name Not Available"}
                       </h3>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1" aria-label="Booking date">
+                        <div className="flex items-center gap-1" aria-label="Appointment date">
                           <Calendar className="w-4 h-4" aria-hidden="true" />
                           <span>
-                            Booked: {formatDate(booking.updatedAt)}
+                            Appointment: {booking.appointmentDate ? 
+                              new Date(booking.appointmentDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              }) : "Date not set"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1" aria-label="Turnaround time">
+                        <div className="flex items-center gap-1" aria-label="Appointment time">
                           <Clock className="w-4 h-4" aria-hidden="true" />
+                          <span>Time: {booking.appointmentTime || "Time not set"}</span>
+                        </div>
+                        <div className="flex items-center gap-1" aria-label="Turnaround time">
+                          <Activity className="w-4 h-4" aria-hidden="true" />
                           <span>TAT: {booking.testId?.tat || "Not specified"}</span>
                         </div>
                       </div>
@@ -278,8 +287,11 @@ const Booking = () => {
 
                   {/* Footer with Actions */}
                   <footer className="flex items-center justify-between pt-6 border-t border-gray-100">
-                    <div className="text-sm text-gray-500" aria-label="Booking identifier">
-                      Booking ID: {booking._id?.slice(-8).toUpperCase() || "N/A"}
+                    <div className="text-sm text-gray-500" aria-label="Booking information">
+                      <div>Booking ID: {booking._id?.slice(-8).toUpperCase() || "N/A"}</div>
+                      <div className="text-xs mt-1">
+                        Booked on: {formatDate(booking.createdAt)}
+                      </div>
                     </div>
                     <a
                       href={`${API_URL}/reports/dummy-report.pdf`}

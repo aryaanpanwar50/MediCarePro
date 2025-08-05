@@ -4,6 +4,49 @@ const jwt = require('jsonwebtoken');
 const Patient = require('../Model/Patient.model');
 const router = express.Router();
 
+// Token verification endpoint
+router.post('/auth/verify', async (req, res) => {
+  try {
+    const { accessToken } = req.body;
+    
+    if (!accessToken) {
+      return res.status(401).json({
+        success: false,
+        error: "Access token is required"
+      });
+    }
+
+    // Verify access token
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    
+    // Find patient
+    const patient = await Patient.findById(decoded.id);
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: "Patient not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Token is valid",
+      patient: {
+        id: patient._id,
+        name: patient.name,
+        email: patient.email
+      }
+    });
+
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(403).json({
+      success: false,
+      error: "Invalid or expired token"
+    });
+  }
+});
+
 // Token refresh endpoint
 router.post('/auth/refresh', async (req, res) => {
   try {

@@ -42,6 +42,8 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
 
   useEffect(() => {
     const getTests = async () => {
@@ -77,6 +79,17 @@ const Home = () => {
     setIsModalOpen(true);
   };
 
+  // Handle user signout
+  const handleSignOut = () => {
+    // Clear all tokens from localStorage
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.clear(); // Clear all localStorage data
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
   const confirBooking = async (test) => {
     try {
       const token = getToken();
@@ -87,16 +100,28 @@ const Home = () => {
         return;
       }
 
+      // Validate appointment selection
+      if (!appointmentDate || !appointmentTime) {
+        setError("Please select appointment date and time");
+        return;
+      }
+
+      // Create booking with appointment details
       const response = await axios.post(
         `${API_URl}/clinic/booking/create`,
         {
           testId: test._id,
+          appointmentDate,
+          appointmentTime
         }
       );
 
       if (response.data.success) {
         setIsModalOpen(false);
-        alert(`✅ Booking confirmed for ${test.name}!`);
+        setAppointmentDate("");
+        setAppointmentTime("");
+        alert(`✅ Booking confirmed for ${test.name}! Appointment scheduled for ${appointmentDate} at ${appointmentTime}`);
+        console.log(response)
       } else {
         setError("Booking failed. Please try again.");
       }
@@ -119,7 +144,17 @@ const Home = () => {
 
       <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-12 animate-fade-in-up">
+        <div className="text-center mb-12 animate-fade-in-up relative">
+          {/* Sign Out Button */}
+          <button
+            onClick={handleSignOut}
+            className="absolute top-0 right-0 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
+            aria-label="Sign out"
+          >
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            Sign Out
+          </button>
+          
           <div className="inline-flex items-center justify-center w-20 h-20 bg-teal-600 rounded-full mb-6 animate-pulse-slow hover:scale-110 transition-transform duration-300">
             <Stethoscope className="w-10 h-10 text-white animate-heartbeat" />
           </div>
@@ -335,12 +370,81 @@ const Home = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Appointment Date and Time Selection */}
+            <div className="mb-6 space-y-4">
+              <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                Select Appointment Date & Time
+              </h4>
+              
+              {/* Date Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-2" />
+                  Appointment Date
+                </label>
+                <input
+                  type="date"
+                  value={appointmentDate}
+                  onChange={(e) => setAppointmentDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              
+              {/* Time Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Clock className="w-4 h-4 inline mr-2" />
+                  Appointment Time
+                </label>
+                <select
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Time</option>
+                  <option value="09:00 AM">09:00 AM</option>
+                  <option value="09:30 AM">09:30 AM</option>
+                  <option value="10:00 AM">10:00 AM</option>
+                  <option value="10:30 AM">10:30 AM</option>
+                  <option value="11:00 AM">11:00 AM</option>
+                  <option value="11:30 AM">11:30 AM</option>
+                  <option value="12:00 PM">12:00 PM</option>
+                  <option value="12:30 PM">12:30 PM</option>
+                  <option value="01:00 PM">01:00 PM</option>
+                  <option value="01:30 PM">01:30 PM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="02:30 PM">02:30 PM</option>
+                  <option value="03:00 PM">03:00 PM</option>
+                  <option value="03:30 PM">03:30 PM</option>
+                  <option value="04:00 PM">04:00 PM</option>
+                  <option value="04:30 PM">04:30 PM</option>
+                  <option value="05:00 PM">05:00 PM</option>
+                </select>
+              </div>
+            </div>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <AlertCircle className="w-4 h-4 inline mr-2" />
+                {error}
+              </div>
+            )}
+            
             <p className="text-gray-600 mb-6">
               Please confirm your booking for this medical test.
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setAppointmentDate("");
+                  setAppointmentTime("");
+                  setError("");
+                }}
                 className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Cancel

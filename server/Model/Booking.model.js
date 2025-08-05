@@ -9,7 +9,14 @@ const bookingModel = mongoose.Schema({
         type:mongoose.Schema.ObjectId,
         ref:'Test'
     },
-   
+    appointmentDate:{
+        type:Date,
+        required:true
+    },
+    appointmentTime:{
+        type:String,
+        required:true
+    }
 
 },{timestamps:true})
 

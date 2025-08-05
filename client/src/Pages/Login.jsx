@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   User,
   Mail,
@@ -27,8 +27,21 @@ const setTokens = (token, refreshToken) => {
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 };
 
+// Token verification function
+const verifyToken = async (token) => {
+  try {
+    const response = await axios.post(`${API_URl}/clinic/auth/verify`, {
+      accessToken: token
+    });
+    return response.data.success;
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return false;
+  }
+};
+
 const MedicalProfessionalAuth = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [currentView, setCurrentView] = useState("login");
   const [signUpData, setSignUpData] = useState({
@@ -40,6 +53,45 @@ const MedicalProfessionalAuth = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check for existing valid token on component mount
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      if (accessToken) {
+        const isValid = await verifyToken(accessToken);
+        if (isValid) {
+          // Token is valid, redirect to home
+          navigate('/home');
+          return;
+        } else {
+          // Token is invalid, clear it
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
+      }
+      
+      setIsCheckingAuth(false);
+    };
+
+    checkExistingAuth();
+  }, [navigate]);
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-teal-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-600 rounded-full mb-4 animate-pulse">
+            <Stethoscope className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -75,18 +127,28 @@ const MedicalProfessionalAuth = () => {
         setTokens(accessToken, refreshToken);
         setSuccess("Login successful! Redirecting...");
 
-        setTimeout(()=>{
-            navigate('/')
-        },3000)
-    }
-        
-} catch (e) {
-      setError(e.response?.data?.error);
+        // Redirect immediately to home page
+        setTimeout(() => {
+          navigate('/home');
+        }, 1000);
+      }
+    } catch (e) {
+      setError(e.response?.data?.error || "Login failed. Please try again.");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-blue-50 relative overflow-hidden">
+      {/* Back to Home Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-white text-teal-600 rounded-lg hover:bg-teal-50 transition-all duration-300 transform hover:scale-105 font-medium focus:outline-none focus:ring-2 focus:ring-teal-400 shadow-lg border border-teal-100"
+        aria-label="Back to home page"
+      >
+        <ArrowRight className="w-4 h-4 rotate-180" />
+        Back to Home
+      </button>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-teal-200 rounded-full opacity-20 animate-float"></div>

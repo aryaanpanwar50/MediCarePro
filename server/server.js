@@ -35,7 +35,7 @@ app.use('/clinic/patient', PatientRoutes);
 app.use('/clinic/test',TestRoutes)
 app.use('/clinic/booking',BookingRoutes)
 app.use('/reports',express.static(path.join(__dirname,'public')))
-app.use('/',AuthRefresh)
+app.use('/clinic',AuthRefresh)
 
 app.get('/',(req,res)=>{
    res.send("This is a clinic")
