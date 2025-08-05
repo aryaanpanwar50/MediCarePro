@@ -24,7 +24,7 @@ const corsOptions = {
       ? [
           process.env.FRONTEND_URL,
           'https://medi-care-pro-xi.vercel.app',
-          'https://medi-care-9xijemlmm-aryaans-projects-ae5772c2.vercel.app'
+          'https://medi-care-pro-backend-git-main-aryaans-projects-ae5772c2.vercel.app/'
         ]
       : [
           'http://localhost:5173',
