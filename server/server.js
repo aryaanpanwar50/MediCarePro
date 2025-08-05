@@ -22,7 +22,6 @@ const corsOptions = {
     
     const allowedOrigins = process.env.NODE_ENV === 'production' 
       ? [
-          process.env.FRONTEND_URL,
           'https://medi-care-pro-xi.vercel.app',
           'https://medi-care-pro-backend.vercel.app'
         ]
