@@ -2,6 +2,7 @@ const express = require('express');
 const connectDb = require('./Config/db.js');
 const cors = require('cors')
 const path = require('path');
+const mongoose = require('mongoose');
 const PatientRoutes = require('./Routes/Patient.route.js');
 const TestRoutes = require('./Routes/Test.Route.js')
 const BookingRoutes = require('./Routes/Booking.route.js')
@@ -62,12 +63,45 @@ app.get('/',(req,res)=>{
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+    
     res.status(200).json({
         status: 'OK',
         message: 'Server is running',
+        database: {
+            status: dbStatus[dbState],
+            readyState: dbState
+        },
         timestamp: new Date().toISOString()
     })
 })
+
+// Database status endpoint
+app.get('/db-status', (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+    
+    res.status(dbState === 1 ? 200 : 503).json({
+        database: {
+            status: dbStatus[dbState],
+            readyState: dbState,
+            host: mongoose.connection.host,
+            name: mongoose.connection.name
+        },
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Global error handler
 app.use((error, req, res, next) => {
